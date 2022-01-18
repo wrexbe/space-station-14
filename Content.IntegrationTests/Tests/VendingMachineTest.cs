@@ -13,9 +13,12 @@ namespace Content.IntegrationTests.Tests
         [Test]
         public async Task Test()
         {
-            var server = StartServer();
+            // Cursed vending machine
+            var server = StartServer(new() { Pool = false});
 
-            server.Assert(() =>
+            await server.WaitIdleAsync();
+
+            server.Post(() =>
             {
                 var prototypeManager = IoCManager.Resolve<IPrototypeManager>();
                 foreach (var vendorProto in prototypeManager.EnumeratePrototypes<VendingMachineInventoryPrototype>())

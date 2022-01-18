@@ -20,6 +20,8 @@ using Robust.Shared.Network;
 using Robust.Shared.Prototypes;
 using Robust.UnitTesting;
 
+[assembly: LevelOfParallelism(4)]
+
 namespace Content.IntegrationTests
 {
     [Parallelizable(ParallelScope.All)]
@@ -187,20 +189,9 @@ namespace Content.IntegrationTests
 
         private bool ShouldPool(IntegrationOptions options, bool server)
         {
-            // TODO TEST POOLING client pooling
-            if (!server)
-            {
-                return false;
-            }
-
-            if (options.Pool.HasValue)
-            {
-                return options.Pool.Value;
-            }
-
             if (server)
             {
-                if (options.CVarOverrides.Count != 3)
+                if (options.CVarOverrides.Count != ServerTestCvars.Length)
                 {
                     return false;
                 }
@@ -233,9 +224,14 @@ namespace Content.IntegrationTests
                 return false;
             }
 
-            return options.InitIoC == null &&
-                   options.BeforeStart == null &&
-                   options.ContentAssemblies == null;
+            if (options.InitIoC != null ||
+                options.BeforeStart != null ||
+                options.ContentAssemblies != null)
+            {
+                return false;
+            }
+
+            return options.Pool ?? true;
         }
 
         protected override async Task OnClientReturn(ClientIntegrationInstance client)
@@ -263,7 +259,7 @@ namespace Content.IntegrationTests
                 }
             });
 
-            await WaitUntil(client, () => !net.IsConnected);
+            await WaitUntil(client, () => !net.IsConnected, maxTicks: 601);
         }
 
         protected override async Task OnServerReturn(ServerIntegrationInstance server)
@@ -292,7 +288,7 @@ namespace Content.IntegrationTests
                 }
             });
 
-            await WaitUntil(server, () => players.PlayerCount == 0);
+            await WaitUntil(server, () => players.PlayerCount == 0, maxTicks: 602);
 
             await server.WaitPost(() =>
             {
@@ -312,7 +308,7 @@ namespace Content.IntegrationTests
 
             if (!gameTicker.DummyTicker)
             {
-                await WaitUntil(server, () => gameTicker.RunLevel == GameRunLevel.InRound);
+                await WaitUntil(server, () => gameTicker.RunLevel == GameRunLevel.InRound, maxTicks: 603);
             }
         }
 
