@@ -58,7 +58,7 @@ jobs:
       run: dotnet restore --no-cache -r ${{ matrix.rid }} -v q
 
     - name: Build Project
-      run: dotnet build --configuration Debug -r ${{ matrix.rid }} --no-restore /p:WarningsAsErrors=nullable /m
+      run: dotnet build --configuration Debug --no-restore /p:WarningsAsErrors=nullable /m
 
     - name: Run Content.Tests
       run: dotnet test --no-build Content.Tests/Content.Tests.csproj -- NUnit.ConsoleOut=0
