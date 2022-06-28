@@ -28,33 +28,27 @@ jobs:
   build:
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-2019]
+        include:
+          - os: ubuntu-latest
+            rid: linux-x64
+          - os: windows-2022
+            rid: win10-x64
 
     runs-on: ${{ matrix.os }}
 
     steps:
     - name: Checkout Master
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3.0.2
+      
+    - name: Pull engine updates
+      uses: space-wizards/submodule-dependency@v0.1.5
 
     - name: Setup Submodule
       run: |
         git submodule update --init --recursive
 
-    - name: Pull engine updates
-      uses: space-wizards/submodule-dependency@v0.1.5
-
-    - name: Update Engine Submodules
-      run: |
-        cd RobustToolbox/
-        git submodule update --init --recursive
-
-    - name: Setup .NET Core
-      uses: actions/setup-dotnet@v1
-      with:
-        dotnet-version: 6.0.x
-
     - name: Install dependencies
-      run: dotnet restore
+      run: dotnet restore --no-cache -r ${{ matrix.rid }}
 
     - name: Build Project
       run: dotnet build --configuration Debug --no-restore /p:WarningsAsErrors=nullable /m
@@ -65,5 +59,4 @@ jobs:
     - name: Run Content.IntegrationTests
       shell: pwsh
       run: |
-        $env:DOTNET_gcServer=1
         dotnet test --no-build Content.IntegrationTests/Content.IntegrationTests.csproj -- NUnit.ConsoleOut=0
