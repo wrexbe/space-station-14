@@ -55,7 +55,7 @@ jobs:
         git submodule update --init --recursive
 
     - name: Install dependencies
-      run: dotnet restore --no-cache -r ${{ matrix.rid }} --verbosity detailed --disable-parallel
+      run: dotnet restore --no-cache -r ${{ matrix.rid }} -v q --disable-parallel
 
     - name: Build Project
       run: dotnet build --configuration Debug --no-restore /p:WarningsAsErrors=nullable /m
