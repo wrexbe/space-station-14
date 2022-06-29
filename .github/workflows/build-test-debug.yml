@@ -51,19 +51,16 @@ jobs:
       uses: space-wizards/submodule-dependency@v0.1.5
 
     - name: Setup Submodule
-      run: |
-        git submodule update --init --recursive
+      run: git submodule update --init --recursive
 
     - name: Install dependencies
       run: dotnet restore --no-cache -r ${{ matrix.rid }} -v q
 
     - name: Build Project
-      run: dotnet build --configuration Debug -v q --no-restore /p:WarningsAsErrors=nullable /m
+      run: dotnet build --configuration Debug -v q --no-restore /p:WarningsAsErrors=nullable /m --no-incremental
 
     - name: Run Content.Tests
       run: dotnet test --no-build Content.Tests/Content.Tests.csproj -- NUnit.ConsoleOut=0
 
     - name: Run Content.IntegrationTests
-      shell: pwsh
-      run: |
-        dotnet test --no-build Content.IntegrationTests/Content.IntegrationTests.csproj -- NUnit.ConsoleOut=0
+      run: dotnet test --no-build Content.IntegrationTests/Content.IntegrationTests.csproj -- NUnit.ConsoleOut=0
